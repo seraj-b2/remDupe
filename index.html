@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSV to Array Converter</title>
+    <style>
+      body {
+        background-color: #222;
+        color: #ddd;
+        font-family: Arial, sans-serif;
+        padding: 20px;
+      }
+      .container {
+        /* text-align: center; */
+        margin-top: 50px;
+      }
+      .code-container, textarea {
+        padding: 1em;
+        border-radius: 12px;
+        box-shadow: 0 0 12px 2px #444;
+        letter-spacing: 1.5px;
+        word-spacing: 3px;
+        color: yellow;
+      }
+      .input-container {
+        display: flex;
+        gap: 10px;
+        font-family: Monaco, Courier New, Consolas, Menlo, monospace;
+      }
+      textarea {
+        width: 100%;
+        height: 50vh;
+        border: none;
+        border-radius: 4px;
+        margin-bottom: 2em;
+      }
+      button {
+        background-color: #007bff;
+        color: #ffffff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-bottom: 10px;
+      }
+      button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        font-weight: bold;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 4px;
+      }
+      button:hover {
+        background-color: #0056b3;
+      }
+      select {
+        background-color: #444444;
+        color: #ffffff;
+        padding: 10px;
+        border: none;
+        border-radius: 4px;
+        margin-bottom: 10px;
+      }
+
+      select:focus {
+        outline: none;
+      }
+      /* Styles for the alert container */
+      .alert-container {
+        position: fixed;
+        width: auto;
+        bottom: 20px;
+        left: 20px;
+        padding: 10px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: 1.5px;
+        word-spacing: 3px;
+        color: yellow;
+        background-color: #222;
+        box-shadow: 0 0 12px 2px #444;
+        border-radius: 2em;
+        animation: slideInRight 0.5s forwards;
+      }
+      /* Animation for slide in from right */
+      @keyframes slideInRight {
+        from {
+          left: -300px; /* Start position off the screen on the left */
+        }
+        to {
+          left: 20px; /* End position at 20px from the left */
+        }
+      }
+      .alert-container.slide-out-left {
+        animation: slideOutLeft 0.5s forwards;
+      }
+      /* Animation for slide out to right when dismissed */
+      @keyframes slideOutLeft {
+        from {
+          left: 20px; /* Start position at 20px from the left */
+        }
+        to {
+          left: -300px; /* End position off the screen on the right */
+        }
+      }
+
+      /* Styles for the close button */
+      .close-button {
+        float: right;
+        cursor: pointer;
+      }
+
+      /* Styles for the alert message */
+      .alert-message {
+        margin: 0 20px 0 0;
+        white-space: nowrap;
+      }
+
+      /* Hide the alert container by default */
+      .alert-container.hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Remove Duplicates</h2>
+      <div class="input-container">
+        <textarea name="" id="csvInput1" cols="30"></textarea>
+        <textarea name="" id="csvInput2" cols="30"></textarea>
+      </div>
+      <select id="sup">
+        <option value="">None</option>
+        <option value='"'>"</option>
+        <option value="'" selected>'</option>
+      </select>
+
+      <select id="delimeter">
+        <option value="">None</option>
+        <option value=" "></option>
+        <option value=",">,</option>
+        <option value=", " selected>,</option>
+      </select>
+
+      <button onclick="removeDupe()">Apply</button>
+      <div id="result"></div>
+    </div>
+    <!-- Alert Message Container -->
+    <div id="alertContainer" class="alert-container hidden">
+      <span id="closeButton" class="close-button" onclick="dismissAlert()"
+        >&times;</span
+      >
+      <p id="alertMessage" class="alert-message">Data Successfully Copied!</p>
+    </div>
+    <script>
+      function showAlert() {
+        const alertContainer = document.getElementById("alertContainer");
+        alertContainer.classList.remove("hidden");
+        setTimeout(() => {
+          dismissAlert();
+        }, 2000);
+      }
+
+      function dismissAlert() {
+        const alertContainer = document.getElementById("alertContainer");
+        alertContainer.classList.add("slide-out-left");
+        setTimeout(() => {
+          alertContainer.classList.add("hidden");
+          alertContainer.classList.remove("slide-out-left");
+        }, 500);
+      }
+      function removeDupe() {
+        const csvInput1 = document.getElementById("csvInput1").value;
+        const csvInput2 = document.getElementById("csvInput2").value;
+
+        const dataArray1 = csvInput1.split(",").map((value) => value.trim());
+        const dataArray2 = csvInput2.split(",").map((value) => value.trim());
+        const supDropdown = document.getElementById("sup");
+        const delimeterDropdown = document.getElementById("delimeter");
+
+        const supValue = supDropdown.value;
+        const delimeterValue = delimeterDropdown.value;
+
+        let result = new Set();
+        dataArray1.filter((row) => {
+          if (!dataArray2.includes(row)) result.add(row);
+        });
+
+        console.log(result.size);
+        const finalData = Array.from(result)
+          .map((r) => `${supValue}${r}${supValue}`)
+          .join(`${delimeterValue}`);
+
+        // Display the data of the selected column
+        const resultDiv = document.getElementById("result");
+        resultDiv.innerHTML = `<p>Total removed data <b>${dataArray1.length} - ${dataArray2.length}</b> & Total final count is <b>${result.size}</b> >>> <br /><div class="code-container"><code id="codeSnippet" ondblclick="makeEditable()" onclick="copyToClipboard()">${finalData}</code></div></p>`;
+      }
+      function makeEditable() {
+        const editableDiv = document.getElementById("codeSnippet");
+        editableDiv.contentEditable = true;
+      }
+      function copyToClipboard() {
+        const codeSnippetElement = document.getElementById("codeSnippet");
+        const textToCopy = codeSnippetElement.innerText;
+
+        // Use the Clipboard API to copy the text to the clipboard
+        navigator.clipboard
+          .writeText(textToCopy)
+          .then(() => {
+            // Optionally, you can provide some visual feedback to indicate the copy operation is successful
+            showAlert();
+          })
+          .catch((error) => {
+            // Handle errors if the copy operation fails
+            console.error("Failed to copy: ", error);
+          });
+      }
+    </script>
+  </body>
+</html>
